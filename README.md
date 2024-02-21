@@ -1,42 +1,51 @@
 # Container Registry mirrors of Kubernetes
 
-Bypass GFW, container registry mirrors for  kubernetes developer in China mainland.
+Bypass GFW, container registry mirrors for Kubernetes developer in China mainland.
+
+## Quick start
+
+- Replace `REPLACE_ME_DOMAIN` with your domain in `caddy/sites-enabled/mirror-registry`
+- Replace `REPLACE_ME_WITH_YOUR_CF_API_TOKEN` with your own Cloudflare api token in `docker-compose.yml`
+
+```
+docker compose up -d
+```
 
 ## Registry list
 
-| origin          | mirror      |
-| ----------      | ----------- |
-| docker.io       | hub.k8s.li  |
-| registry.k8s.io | gcr.k8s.li  |
-| quay.io         | quay.k8s.li |
+| origin          | mirror                      |
+| --------------- | --------------------------- |
+| registry.k8s.io | k8s-registry.example.com    |
+| docker.io       | docker-registry.example.com |
+| quay.io         | quay-registry.example.com   |
 
 ## Usage
 
 ### Kubeadm
 
 ```shell
-$ kubeadm config images pull --image-repository=gcr.k8s.li
-[config/images] Pulled gcr.k8s.li/kube-apiserver:v1.20.6
-[config/images] Pulled gcr.k8s.li/kube-controller-manager:v1.20.6
-[config/images] Pulled gcr.k8s.li/kube-scheduler:v1.20.6
-[config/images] Pulled gcr.k8s.li/kube-proxy:v1.20.6
-[config/images] Pulled gcr.k8s.li/pause:3.2
-[config/images] Pulled gcr.k8s.li/etcd:3.4.13-0
-[config/images] Pulled gcr.k8s.li/coredns:1.7.0
+$ kubeadm config images pull --image-repository=k8s-registry.example.com
+[config/images] Pulled k8s-registry.example.com/kube-apiserver:v1.20.6
+[config/images] Pulled k8s-registry.example.com/kube-controller-manager:v1.20.6
+[config/images] Pulled k8s-registry.example.com/kube-scheduler:v1.20.6
+[config/images] Pulled k8s-registry.example.com/kube-proxy:v1.20.6
+[config/images] Pulled k8s-registry.example.com/pause:3.2
+[config/images] Pulled k8s-registry.example.com/etcd:3.4.13-0
+[config/images] Pulled k8s-registry.example.com/coredns:1.7.0
 ```
 
 ### Kubespray
 
-- container image `quay.k8s.li/kubespray/kubespray:$TAG`
+- container image `quay-registry.example.com/kubespray/kubespray:$TAG`
 
 ```shell
-$ docker pull quay.k8s.li/kubespray/kubespray:v2.15.1
+$ docker pull quay-registry.example.com/kubespray/kubespray:v2.15.1
 ```
 
 - `roles/download/defaults/main.yml`
 
 ```yaml
-kube_image_repo: "gcr.k8s.li"
-docker_image_repo: "hub.k8s.li"
-quay_image_repo: "quay.k8s.li"
+kube_image_repo: "k8s-registry.example.com"
+docker_image_repo: "docker-registry.example.com"
+quay_image_repo: "quay-registry.example.com"
 ```

@@ -12,7 +12,7 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
     image: cgr.dev/chainguard/redis:latest
-    init: true
+    init: false
     pull_policy: always
     read_only: false
     restart: always
@@ -57,12 +57,12 @@ services:
       - net.ipv4.tcp_slow_start_after_idle=0
     volumes:
       - ./config.yml:/etc/docker/registry/config.yml:ro
-      - ./data:/var/lib/registry
+      - gcr_registry_data:/var/lib/registry
 
   k8s-registry:
     cap_drop:
       - ALL
-    container_name: mirror-gcr-registry
+    container_name: mirror-k8s-registry
     depends_on:
       redis:
         condition: service_started
@@ -88,12 +88,12 @@ services:
       - net.ipv4.tcp_slow_start_after_idle=0
     volumes:
       - ./config.yml:/etc/docker/registry/config.yml:ro
-      - ./data:/var/lib/registry
+      - k8s_registry_data:/var/lib/registry
 
   docker-registry:
     cap_drop:
       - ALL
-    container_name: mirror-hub-registry
+    container_name: mirror-docker-registry
     depends_on:
       redis:
         condition: service_started
@@ -121,7 +121,7 @@ services:
       - net.ipv4.tcp_slow_start_after_idle=0
     volumes:
       - ./config.yml:/etc/docker/registry/config.yml:ro
-      - ./data:/var/lib/registry
+      - docker_registry_data:/var/lib/registry
 
   quay-registry:
     cap_drop:
@@ -152,7 +152,7 @@ services:
       - net.ipv4.tcp_slow_start_after_idle=0
     volumes:
       - ./config.yml:/etc/docker/registry/config.yml:ro
-      - ./data:/var/lib/registry
+      - quay_registry_data:/var/lib/registry
 
   caddy:
     cap_add:
@@ -162,6 +162,8 @@ services:
     container_name: mirror-caddy
     image: icecodexi/caddy:cfdns
     init: false
+    environment:
+      - CF_API_TOKEN=REPLACE_ME_WITH_YOUR_CF_API_TOKEN
     ports:
       - target: 80
         published: 80
@@ -200,4 +202,12 @@ services:
 
 volumes:
   redis_data:
+    driver: local
+  gcr_registry_data:
+    driver: local
+  k8s_registry_data:
+    driver: local
+  docker_registry_data:
+    driver: local
+  quay_registry_data:
     driver: local

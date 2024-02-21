@@ -1,15 +1,19 @@
-gcr.REPLACE_ME_DOMAIN {
+gcr-registry.REPLACE_ME_DOMAIN {
 	reverse_proxy gcr-registry:5000
+	import dns_cloudflare
 }
 
-k8s.REPLACE_ME_DOMAIN {
+k8s-registry.REPLACE_ME_DOMAIN {
 	reverse_proxy k8s-registry:5000
+	import dns_cloudflare
 }
 
-hub.REPLACE_ME_DOMAIN {
+docker-registry.REPLACE_ME_DOMAIN {
 	reverse_proxy docker-registry:5000
+	import dns_cloudflare
 }
 
-quay.REPLACE_ME_DOMAIN {
+quay-registry.REPLACE_ME_DOMAIN {
 	reverse_proxy quay-registry:5000
+	import dns_cloudflare
 }
