@@ -31,6 +31,13 @@
 	}
 }
 
+(dns_cloudflare) {
+	tls {
+		dns cloudflare {env.CF_API_TOKEN}
+		resolvers 1.1.1.1
+	}
+}
+
 import sites-enabled/*
 
 # Refer to the Caddy docs for more information:
