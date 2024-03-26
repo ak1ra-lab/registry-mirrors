@@ -34,6 +34,8 @@ services:
       - REGISTRY_PROXY_REMOTEURL=https://registry.k8s.io
     image: registry:2
     init: true
+    # ports:
+    #   - "127.0.0.1:5001:5000"
     pull_policy: always
     read_only: false
     restart: always
@@ -60,6 +62,8 @@ services:
       - REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io
     image: registry:2
     init: true
+    ports:
+      - "127.0.0.1:5000:5000"
     pull_policy: always
     read_only: false
     restart: always
@@ -86,6 +90,8 @@ services:
       - REGISTRY_PROXY_REMOTEURL=https://quay.io
     image: registry:2
     init: true
+    # ports:
+    #   - "127.0.0.1:5002:5000"
     pull_policy: always
     read_only: false
     restart: always
@@ -103,12 +109,12 @@ services:
       - ./data:/var/lib/registry
 
   caddy:
-    build: ./caddy/
     cap_add:
       - NET_BIND_SERVICE
     cap_drop:
       - ALL
     container_name: mirror-caddy
+    image: icecodexi/caddy:cfdns
     init: true
     ports:
       - target: 80
@@ -131,6 +137,14 @@ services:
       - net.ipv4.tcp_fack=0
         # SSR could impact TCP's performance on a fixed-speed network (e.g., wired)
       - net.ipv4.tcp_slow_start_after_idle=0
+    ulimits:
+      nproc: 16384
+      nofile:
+        soft: 16384
+        hard: 16384
+      memlock:
+        soft: 8192
+        hard: 16384
     volumes:
       - /usr/local/etc/caddy/:/usr/local/etc/caddy/
       - type: bind
