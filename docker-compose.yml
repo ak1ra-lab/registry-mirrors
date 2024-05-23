@@ -33,11 +33,37 @@ services:
         condition: service_started
         restart: true
     environment:
+      - REGISTRY_PROXY_REMOTEURL=https://gcr.io
+    image: registry:2
+    init: true
+    pull_policy: always
+    read_only: false
+    restart: always
+    sysctls:
+        # mitigate TIME-WAIT Assassination hazards in TCP
+      - net.ipv4.tcp_rfc1337=1
+        # SACK is commonly exploited and rarely used
+      - net.ipv4.tcp_sack=0
+      - net.ipv4.tcp_dsack=0
+      - net.ipv4.tcp_fack=0
+        # SSR could impact TCP's performance on a fixed-speed network (e.g., wired)
+      - net.ipv4.tcp_slow_start_after_idle=0
+    volumes:
+      - ./config.yml:/etc/docker/registry/config.yml:ro
+      - ./data:/var/lib/registry
+
+  k8s-registry:
+    cap_drop:
+      - ALL
+    container_name: mirror-gcr-registry
+    depends_on:
+      redis:
+        condition: service_started
+        restart: true
+    environment:
       - REGISTRY_PROXY_REMOTEURL=https://registry.k8s.io
     image: registry:2
     init: true
-    # ports:
-    #   - "127.0.0.1:5001:5000"
     pull_policy: always
     read_only: false
     restart: always
@@ -96,8 +122,6 @@ services:
       - REGISTRY_PROXY_REMOTEURL=https://quay.io
     image: registry:2
     init: true
-    # ports:
-    #   - "127.0.0.1:5002:5000"
     pull_policy: always
     read_only: false
     restart: always

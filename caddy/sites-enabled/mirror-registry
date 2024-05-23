@@ -2,6 +2,10 @@ gcr.REPLACE_ME_DOMAIN {
 	reverse_proxy gcr-registry:5000
 }
 
+k8s.REPLACE_ME_DOMAIN {
+	reverse_proxy k8s-registry:5000
+}
+
 hub.REPLACE_ME_DOMAIN {
 	reverse_proxy docker-registry:5000
 }
