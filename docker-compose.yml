@@ -29,7 +29,9 @@ services:
       - ALL
     container_name: mirror-gcr-registry
     depends_on:
-      - redis
+      redis:
+        condition: service_started
+        restart: true
     environment:
       - REGISTRY_PROXY_REMOTEURL=https://registry.k8s.io
     image: registry:2
@@ -57,7 +59,9 @@ services:
       - ALL
     container_name: mirror-hub-registry
     depends_on:
-      - redis
+      redis:
+        condition: service_started
+        restart: true
     environment:
       - REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io
     image: registry:2
@@ -85,7 +89,9 @@ services:
       - ALL
     container_name: mirror-quay-registry
     depends_on:
-      - redis
+      redis:
+        condition: service_started
+        restart: true
     environment:
       - REGISTRY_PROXY_REMOTEURL=https://quay.io
     image: registry:2
