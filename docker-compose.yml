@@ -36,6 +36,8 @@ services:
       - REGISTRY_PROXY_REMOTEURL=https://gcr.io
     image: registry:2
     init: true
+    labels:
+      - "com.centurylinklabs.watchtower.depends-on=mirror-redis"
     pull_policy: always
     read_only: false
     restart: always
@@ -64,6 +66,8 @@ services:
       - REGISTRY_PROXY_REMOTEURL=https://registry.k8s.io
     image: registry:2
     init: true
+    labels:
+      - "com.centurylinklabs.watchtower.depends-on=mirror-redis"
     pull_policy: always
     read_only: false
     restart: always
@@ -92,6 +96,8 @@ services:
       - REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io
     image: registry:2
     init: true
+    labels:
+      - "com.centurylinklabs.watchtower.depends-on=mirror-redis"
     ports:
       - "127.0.0.1:5000:5000"
     pull_policy: always
@@ -122,6 +128,8 @@ services:
       - REGISTRY_PROXY_REMOTEURL=https://quay.io
     image: registry:2
     init: true
+    labels:
+      - "com.centurylinklabs.watchtower.depends-on=mirror-redis"
     pull_policy: always
     read_only: false
     restart: always
