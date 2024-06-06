@@ -2,12 +2,16 @@ services:
   redis:
     cap_drop:
         - ALL
-    command: /opt/bitnami/scripts/redis/run.sh --maxmemory 100mb --maxmemory-policy allkeys-lru
+    command:
+      - --maxmemory
+      - 128mb
+      - --maxmemory-policy
+      - allkeys-lru
     container_name: mirror-redis
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
-    image: docker.io/bitnami/redis:6.2
+    image: cgr.dev/chainguard/redis:latest
     init: true
     pull_policy: always
     read_only: false
