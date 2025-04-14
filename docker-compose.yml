@@ -39,7 +39,7 @@ services:
     environment:
       - REGISTRY_PROXY_REMOTEURL=https://gcr.io
     image: icecodexi/registry:latest
-    init: true
+    init: false
     labels:
       - "com.centurylinklabs.watchtower.depends-on=mirror-redis"
     pull_policy: always
@@ -69,7 +69,7 @@ services:
     environment:
       - REGISTRY_PROXY_REMOTEURL=https://registry.k8s.io
     image: icecodexi/registry:latest
-    init: true
+    init: false
     labels:
       - "com.centurylinklabs.watchtower.depends-on=mirror-redis"
     pull_policy: always
@@ -99,7 +99,7 @@ services:
     environment:
       - REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io
     image: icecodexi/registry:latest
-    init: true
+    init: false
     labels:
       - "com.centurylinklabs.watchtower.depends-on=mirror-redis"
     ports:
@@ -131,7 +131,7 @@ services:
     environment:
       - REGISTRY_PROXY_REMOTEURL=https://quay.io
     image: icecodexi/registry:latest
-    init: true
+    init: false
     labels:
       - "com.centurylinklabs.watchtower.depends-on=mirror-redis"
     pull_policy: always
@@ -157,7 +157,7 @@ services:
       - ALL
     container_name: mirror-caddy
     image: icecodexi/caddy:cfdns
-    init: true
+    init: false
     ports:
       - target: 80
         published: 80
