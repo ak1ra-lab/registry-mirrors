@@ -1,7 +1,7 @@
 services:
   redis:
     cap_drop:
-        - ALL
+      - ALL
     command:
       - --maxmemory
       - 128mb
@@ -38,6 +38,7 @@ services:
         restart: true
     environment:
       - REGISTRY_PROXY_REMOTEURL=https://gcr.io
+      - OTEL_TRACES_EXPORTER=none
     image: icecodexi/registry:latest
     init: false
     labels:
@@ -68,6 +69,7 @@ services:
         restart: true
     environment:
       - REGISTRY_PROXY_REMOTEURL=https://registry.k8s.io
+      - OTEL_TRACES_EXPORTER=none
     image: icecodexi/registry:latest
     init: false
     labels:
@@ -98,6 +100,7 @@ services:
         restart: true
     environment:
       - REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io
+      - OTEL_TRACES_EXPORTER=none
     image: icecodexi/registry:latest
     init: false
     labels:
@@ -130,6 +133,7 @@ services:
         restart: true
     environment:
       - REGISTRY_PROXY_REMOTEURL=https://quay.io
+      - OTEL_TRACES_EXPORTER=none
     image: icecodexi/registry:latest
     init: false
     labels:

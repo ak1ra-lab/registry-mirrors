@@ -14,7 +14,13 @@ http:
   headers:
     X-Content-Type-Options: [nosniff]
 redis:
-  addr: redis:6379
+  addrs: [redis:6379]
+  maxidleconns: 16
+  poolsize: 64
+  connmaxidletime: 300s
+  dialtimeout: 10ms
+  readtimeout: 10ms
+  writetimeout: 10ms
 health:
   storagedriver:
     enabled: true
