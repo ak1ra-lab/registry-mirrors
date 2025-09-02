@@ -1,0 +1,58 @@
+services:
+  redis:
+    cap_drop:
+      - ALL
+    command:
+      - --maxmemory
+      - 128mb
+      - --maxmemory-policy
+      - allkeys-lru
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    image: {{ redis_image }}
+    init: true
+    pull_policy: missing
+    read_only: false
+    restart: always
+    sysctls: {{ sysctls | list }}
+    volumes:
+      - "redis_data:/bitnami/redis/data"
+
+{% for registry_name, registry_mirror in registry_mirrors.items() %}
+  {{ registry_name }}:
+    cap_drop:
+      - ALL
+    depends_on:
+      redis:
+        condition: service_started
+        restart: true
+    environment:
+      - OTEL_TRACES_EXPORTER=none
+      - REGISTRY_PROXY_REMOTEURL={{ registry_mirror.proxy_remoteurl }}
+    image: {{ registry.image }}
+    ports:
+      - {{ registry_mirror.host_port }}:{{ registry.container_port }}
+    init: false
+    pull_policy: missing
+    read_only: false
+    restart: always
+    sysctls: {{ sysctls | list }}
+    volumes:
+      - type: bind
+        source: {{ [project_src, 'config.yml'] | ansible.builtin.path_join }}
+        target: /etc/distribution/config.yml
+        read_only: true
+      - type: volume
+        source: {{ registry_name ~ '_data' }}
+        target: /var/lib/registry
+
+{% endfor %}
+
+volumes:
+  redis_data:
+    driver: local
+{% for registry_name, registry_mirror in registry_mirrors.items() %}
+  {{ registry_name ~ '_data' }}:
+    driver: local
+{% endfor %}
