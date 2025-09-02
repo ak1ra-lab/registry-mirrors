@@ -14,7 +14,7 @@ storage:
   delete:
     enabled: true
 http:
-  addr: 0.0.0.0:5000
+  addr: 0.0.0.0:{{ registry.container_port }}
   headers:
     X-Content-Type-Options: [nosniff]
 redis:
