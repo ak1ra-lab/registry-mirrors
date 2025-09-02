@@ -1,0 +1,124 @@
+---
+# ansible-playbook site.yml -e 'domain=example.com' -b -v
+- name: template registry-mirrors compose.yml
+  hosts: "{{ playbook_hosts | default('localhost') }}"
+
+  vars:
+    # Whether to create an nginx configuration file
+    nginx_enabled: true
+
+    # domain for nginx server_name
+    # domain: example.com
+
+    # If a wildcard certificate has been issued
+    # ssl_certificate: "/etc/letsencrypt/live/{{ domain }}/fullchain.pem"
+    # ssl_certificate_key: "/etc/letsencrypt/live/{{ domain }}/privkey.pem"
+
+    # community.docker.docker_compose_v2
+    project_src: /var/lib/registry-mirrors
+
+    redis_image: cgr.dev/chainguard/redis:latest
+    registry:
+      image: icecodexi/registry:latest
+      container_port: 5000
+
+    registry_mirrors:
+      docker_registry:
+        host_port: 127.0.0.1:5000
+        proxy_remoteurl: https://registry-1.docker.io
+        server_name: "docker-registry.{{ domain }}"
+
+      k8s_registry:
+        host_port: 127.0.0.1:5001
+        proxy_remoteurl: https://registry.k8s.io
+        server_name: "k8s-registry.{{ domain }}"
+
+      gcr_registry:
+        host_port: 127.0.0.1:5002
+        proxy_remoteurl: https://gcr.io
+        server_name: "gcr-registry.{{ domain }}"
+
+      quay_registry:
+        host_port: 127.0.0.1:5003
+        proxy_remoteurl: https://quay.io
+        server_name: "quay-registry.{{ domain }}"
+
+    sysctls:
+      # mitigate TIME-WAIT Assassination hazards in TCP
+      - net.ipv4.tcp_rfc1337=1
+      # SACK is commonly exploited and rarely used
+      - net.ipv4.tcp_sack=0
+      - net.ipv4.tcp_dsack=0
+      - net.ipv4.tcp_fack=0
+      # SSR could impact TCP's performance on a fixed-speed network (e.g., wired)
+      - net.ipv4.tcp_slow_start_after_idle=0
+
+  tasks:
+    - name: ensure project_src
+      ansible.builtin.file:
+        path: "{{ project_src }}"
+        state: directory
+        mode: "0700"
+
+    - name: template /etc/distribution/config.yml
+      ansible.builtin.template:
+        src: templates/config.yml.j2
+        dest: "{{ [project_src, 'config.yml'] | ansible.builtin.path_join }}"
+
+    - name: template compose.yml
+      ansible.builtin.template:
+        src: templates/compose.yml.j2
+        dest: "{{ [project_src, 'compose.yml'] | ansible.builtin.path_join }}"
+
+    - name: docker compose up
+      community.docker.docker_compose_v2:
+        project_src: "{{ project_src }}"
+        state: present
+
+    - name: template nginx server config
+      when:
+        - (nginx_enabled | ansible.builtin.bool)
+      block:
+        - name: assert vars.domain are set
+          ansible.builtin.assert:
+            that:
+              - (domain | default('') | length) > 0
+            fail_msg: "vars.domain must be set"
+
+        - name: select server_name from registry_mirrors
+          ansible.builtin.set_fact:
+            server_names: "{{ registry_mirrors | ansible.builtin.dict2items | map(attribute='value.server_name') | list }}"
+
+        - name: set_fact on ssl_certificate and ssl_certificate_key
+          vars:
+            letsencrypt_dir: "/etc/letsencrypt/live/{{ server_names[0] }}"
+          ansible.builtin.set_fact:
+            ssl_certificate: "{{ ssl_certificate if (ssl_certificate | default('') | length) > 0 else [letsencrypt_dir, 'fullchain.pem'] | ansible.builtin.path_join }}"
+            ssl_certificate_key: "{{ ssl_certificate_key if (ssl_certificate_key | default('') | length) > 0 else [letsencrypt_dir, 'privkey.pem'] | ansible.builtin.path_join }}"
+
+        - name: template nginx server config
+          ansible.builtin.template:
+            src: templates/nginx.conf.j2
+            dest: "/etc/nginx/conf.d/{{ registry_mirror.value.server_name }}.conf"
+          loop: "{{ registry_mirrors | ansible.builtin.dict2items }}"
+          loop_control:
+            loop_var: registry_mirror
+
+        - name: issue ssl_certificate with certbot DNS01 challenge
+          ansible.builtin.debug:
+            msg: >-
+              {{
+                  [
+                    'certbot',
+                      'certonly',
+                      '--verbose',
+                      '--non-interactive',
+                      '--agree-tos',
+                      '--email=admin@' ~ domain,
+                      '--dns-cloudflare',
+                      '--dns-cloudflare-credentials=/etc/letsencrypt/credentials/cloudflare.ini',
+                      '--domain=' ~ server_names | join(','),
+                      '--dns-cloudflare-propagation-seconds=60',
+                      '--dry-run'
+                  ] | join(' ')
+              }}
