@@ -14,6 +14,9 @@
     # ssl_certificate: "/etc/letsencrypt/live/{{ domain }}/fullchain.pem"
     # ssl_certificate_key: "/etc/letsencrypt/live/{{ domain }}/privkey.pem"
 
+    # http01 or dns01
+    certbot_challenge_type: dns01
+
     # community.docker.docker_compose_v2
     project_src: /var/lib/registry-mirrors
 
@@ -110,6 +113,8 @@
             loop_var: registry_mirror
 
         - name: issue ssl_certificate with certbot DNS01 challenge
+          when:
+            - certbot_challenge_type == 'dns01'
           ansible.builtin.debug:
             msg: >-
               {{
@@ -123,7 +128,24 @@
                       '--dns-cloudflare',
                       '--dns-cloudflare-credentials=/etc/letsencrypt/credentials/cloudflare.ini',
                       '--domain=' ~ server_names | join(','),
-                      '--dns-cloudflare-propagation-seconds=60',
-                      '--dry-run'
+                      '--dns-cloudflare-propagation-seconds=60'
+                  ] | join(' ')
+              }}
+
+        - name: issue ssl_certificate with certbot HTTP01 challenge
+          when:
+            - certbot_challenge_type == 'http01'
+          ansible.builtin.debug:
+            msg: >-
+              {{
+                  [
+                    'certbot',
+                      'certonly',
+                      '--verbose',
+                      '--non-interactive',
+                      '--agree-tos',
+                      '--nginx',
+                      '--email=admin@' ~ domain,
+                      '--domain=' ~ server_names | join(',')
                   ] | join(' ')
               }}

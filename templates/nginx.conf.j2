@@ -7,6 +7,10 @@ server {
     # SSL
     ssl_certificate {{ ssl_certificate }};
     ssl_certificate_key {{ ssl_certificate_key }};
+{% if certbot_challenge_type == 'http01' %}
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+{% endif %}
 
     gzip_static on;
     client_max_body_size 4096m;
