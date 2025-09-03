@@ -43,6 +43,11 @@
         proxy_remoteurl: https://quay.io
         server_name: "quay-registry.{{ domain }}"
 
+      elastic_registry:
+        host_port: 127.0.0.1:5004
+        proxy_remoteurl: https://docker.elastic.co
+        server_name: "elastic-registry.{{ domain }}"
+
     sysctls:
       # mitigate TIME-WAIT Assassination hazards in TCP
       - net.ipv4.tcp_rfc1337=1
