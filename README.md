@@ -7,6 +7,7 @@
 | gcr-registry.example.com     | `https://gcr.io`               | gcr.io            |
 | quay-registry.example.com    | `https://quay.io`              | quay.io           |
 | elastic-registry.example.com | `https://docker.elastic.co`    | docker.elastic.co |
+| ghcr-registry.example.com    | `https://ghcr.io`              | ghcr.io           |
 
 ## Introduction
 

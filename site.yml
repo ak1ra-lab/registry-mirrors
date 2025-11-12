@@ -51,6 +51,11 @@
         proxy_remoteurl: https://docker.elastic.co
         server_name: "elastic-registry.{{ domain }}"
 
+      ghcr_registry:
+        host_port: 127.0.0.1:5005
+        proxy_remoteurl: https://ghcr.io
+        server_name: "ghcr-registry.{{ domain }}"
+
     sysctls:
       # mitigate TIME-WAIT Assassination hazards in TCP
       - net.ipv4.tcp_rfc1337=1
